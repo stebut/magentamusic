@@ -1,0 +1,401 @@
+<!DOCTYPE HTML>
+<!--
+	Urban by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>Magenta Music: AI-Generated Music</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body>
+		
+
+		<!-- <div>
+			<canvas id="canvas">
+		</div> -->
+
+
+		<!-- Load @magenta/music -->
+		<!-- <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.0.0"></script> -->
+		<script src="https://cdn.jsdelivr.net/npm/@magenta/music@^1.0.0"></script>
+
+		
+		<!-- Place your code in the script tag below. You can also use an external .js file -->
+		<script>
+
+window.onload=function(){
+	document.getElementById("myFile").addEventListener("change", update);
+}
+
+
+		TWINKLE_TWINKLE = {
+			notes: [
+				{pitch: 60, startTime: 0.0, endTime: 0.5},
+				{pitch: 60, startTime: 0.5, endTime: 1.0},
+				{pitch: 67, startTime: 1.0, endTime: 1.5},
+				{pitch: 67, startTime: 1.5, endTime: 2.0},
+				{pitch: 69, startTime: 2.0, endTime: 2.5},
+				{pitch: 69, startTime: 2.5, endTime: 3.0},
+				{pitch: 67, startTime: 3.0, endTime: 4.0},
+				{pitch: 65, startTime: 4.0, endTime: 4.5},
+				{pitch: 65, startTime: 4.5, endTime: 5.0},
+				{pitch: 64, startTime: 5.0, endTime: 5.5},
+				{pitch: 64, startTime: 5.5, endTime: 6.0},
+				{pitch: 62, startTime: 6.0, endTime: 6.5},
+				{pitch: 62, startTime: 6.5, endTime: 7.0},
+				{pitch: 60, startTime: 7.0, endTime: 8.0},  
+			],
+			totalTime: 8
+		};
+
+		MARY_HAD = {
+			notes: [
+				{pitch: 60, startTime: 0.0, endTime: 0.5},
+				{pitch: 58, startTime: 0.5, endTime: 1.0},
+				{pitch: 56, startTime: 1.0, endTime: 1.5},
+				{pitch: 58, startTime: 1.5, endTime: 2.0},
+				{pitch: 60, startTime: 2.0, endTime: 2.5},
+				{pitch: 60, startTime: 2.5, endTime: 3.0},
+				{pitch: 60, startTime: 3.0, endTime: 4.0},
+				{pitch: 58, startTime: 4.0, endTime: 4.5},
+				{pitch: 58, startTime: 4.5, endTime: 5.0},
+				{pitch: 58, startTime: 5.0, endTime: 6.0},
+				{pitch: 60, startTime: 6.0, endTime: 6.5},
+				{pitch: 63, startTime: 6.5, endTime: 7.0},
+				{pitch: 63, startTime: 7.0, endTime: 8.0}, 
+			],
+			totalTime: 8
+		};
+		var value = TWINKLE_TWINKLE;
+		var customNS;
+		var input = document.getElementById("myFile");
+		var output = document.getElementById("output");
+
+		function update() {
+
+			var fr = new FileReader();
+			fr.onload = function () {
+				
+				customNS = this.result;
+				document.getElementById('contents').textContent = customNS;
+				console.log(customNS);
+				customNS = JSON.parse(customNS);
+			};
+			fr.readAsText(this.files[0]);
+		}
+		
+		function enableFileUpload(){
+			var el = document.getElementById("custom");
+			if(el.checked){
+				document.getElementById("myFile").disabled = false;
+				document.getElementById("contents").disabled = false;
+			}
+			else{
+				document.getElementById("myFile").disabled = true;
+				document.getElementById("contents").disabled = true; 
+			}   
+     	}  
+
+		function changeVal(choice) {
+		if (choice == 'val1') {
+			value = TWINKLE_TWINKLE
+		} else if (choice == 'val2'){
+			value = MARY_HAD
+		}
+		}
+
+		// Initialize the model.
+		music_rnn = new mm.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
+		music_rnn.initialize();
+		player = new mm.Player();
+		const playNew = () => {
+			
+			if (player.isPlaying()) {
+				player.stop();
+				return;
+			}
+			
+			//Radio button check
+			if (document.getElementById('twinkle').checked) {
+				value = TWINKLE_TWINKLE;
+			}
+			else if(document.getElementById('mary').checked) {
+				value = MARY_HAD;
+			}
+			else if(document.getElementById('custom').checked) {
+				if(customNS != null && customNS != "")
+				{
+					value = customNS;
+				}
+				else{
+					alert("Please upload a text file containing json of the notesequence"); 
+					return;
+				}
+			}
+			else{
+				alert("Please select a base song to generate new melodies"); 
+				return;
+			}
+			
+			rnn_steps = Number(document.getElementById("rnn_steps").value);
+			rnn_temperature = Number(document.getElementById("temp").value);
+			// The model expects a quantized sequence, and ours was unquantized:
+			const qns = mm.sequences.quantizeNoteSequence(value, 4);
+			music_rnn
+			.continueSequence(qns, rnn_steps, rnn_temperature)
+			.then((sample) => player.start(sample));
+				
+			//player.start(sample);
+				
+			};
+		const playSample = () => {
+			
+			
+			if (player.isPlaying()) {
+				player.stop();
+				return;
+			}
+
+			//Radio button check
+			if (document.getElementById('twinkle').checked) {
+				value = TWINKLE_TWINKLE;
+			}
+			else if(document.getElementById('mary').checked) {
+				value = MARY_HAD;
+			}
+			else if(document.getElementById('custom').checked) {
+				if(customNS != null && customNS != "")
+				{
+					value = customNS;
+				}
+				else{
+					alert("Please upload a text file containing json of the notesequence"); 
+					return;
+				}
+			}
+			else{
+				alert("Please select a base song to generate new melodies"); 
+				return;
+			}
+			
+			// The model expects a quantized sequence, and ours was unquantized:
+			const qns = mm.sequences.quantizeNoteSequence(TWINKLE_TWINKLE, 4);
+			// music_rnn
+			// .continueSequence(qns, rnn_steps, rnn_temperature)
+			// .then((sample) => player.start(sample));
+				
+			player.start(value);
+				
+			};
+
+
+			// viz = new mm.PianoRollCanvasVisualizer(TWINKLE_TWINKLE, document.getElementById('canvas'));
+
+			// vizPlayer = new mm.Player(false, {
+			//   run: (note) => viz.redraw(note),
+			//   stop: () => {console.log('done');}
+			// });
+			//vizPlayer.start();
+			//player.stop();
+		</script>
+
+
+
+		<!-- Header -->
+			<header id="header" class="alt">
+				<div class="logo"><a href="index.html"> Magenta Music<span></span></a></div>
+				<a href="#menu">Menu</a>
+			</header>
+
+		<!-- Nav -->
+			<nav id="menu">
+				<ul class="links">
+					<li><a href="index.html">MusicRNN</a></li>
+					<li><a href="musicvae.html">MusicVAE Interpolater</a></li>
+					<li><a href="about.html">About</a></li>
+				</ul>
+			</nav>
+
+		<!-- Banner -->
+			<section id="banner">
+				<div class="inner">
+					<header>
+						<h1>Magenta Music RNN</h1>
+						
+					</header>
+
+					<h4>Step 1: Choose or upload a song and see new melodies be generated!</h4>
+<!-- 
+					<button id="1" onclick="changeVal('val1')">Twinkle, Twinkle, Little Star</button>
+					<button id="2" onclick="changeVal('val2')">Mary Had a Little Lamb</button> -->
+					<div class="radioLeft">
+					<input type="radio" id="twinkle" name="samples" value="0" onchange="enableFileUpload();">
+					<label for="twinkle">Twinkle</label>
+					<br>
+					<input type="radio" id="mary" name="samples" value="1" onchange="enableFileUpload();">
+					<label for="mary">Mary Had a Little Lamb</label>
+					<br>
+					<input type="radio" id="custom" name="samples" value="2" onchange="enableFileUpload();">
+					<label for="custom">Custom NoteSequence Upload</label>
+					<br>
+					</div>
+					
+					<!-- file input -->
+					<input type="file" id="myFile" disabled="disabled">
+					<a href="NoteSequence.txt" download="TwinkleNoteSequence.txt">See Example NoteSequence</a>
+					<textarea id="contents" style="width: 500px; 
+													height: 150px;
+													text-align:center;
+													margin: 0 auto;
+													margin-left: auto;
+													margin-right: auto"
+													disabled="disabled">
+												</textarea>
+					<br>
+					
+					<button id="start" onclick="playSample()">Play Sample</button>
+
+<!-- 					
+					<h5>
+						<p>Hello</p>
+					</h5> -->
+
+					<div class="float-container">
+						<h4>Step 2: Set Temperature and Number of RNN Steps</h4>
+						<div style="float:left;">
+						<!-- <div class="float-child"> -->
+						  <div class="green">Temperature</div>
+							<h6>Higher value indicates output further from sample</h6>
+							<h6>Enter a value between 0.5 and 2 </h6>
+							<input type="text" value=1.5 id="temp" class = "resizedtextbox" style="width: 100px; 
+																									text-align:center;
+																									margin: 0 auto;
+																									margin-left: auto;
+																									margin-right: auto">
+						</div>
+						
+						<div style="float:right;">
+						<!-- <div class="float-child"> -->
+						  <div class="blue">RNN steps</div>
+						  <h6>Higher value means longer output</h6>
+						  <h6>Enter a value between 20 and 80 </h6>
+
+							<input type="text" value=40 id="rnn_steps" 	style="width: 100px; 
+																				text-align:center;margin: 0 auto;
+																				margin-left: auto;
+																				margin-right: auto">
+						</div>
+						
+					</div>
+					
+					<br>
+					<br>
+					<br>
+					<br>
+					<button id="start" onclick="playNew()" style="display: block; margin: 0 auto;">Play New AI-Generated Melody</button>
+					<!--<a href="#main" class="button big scrolly">Learn More</a>-->
+				</div>
+			</section>
+
+		<!-- Main -->
+			<div id="main">
+
+				<!-- Section -->
+					<section class="wrapper style1">
+						<div class="inner">
+							<!-- 2 Columns -->
+								<div class="flex flex-2">
+									<div class="col col1">
+										<div class="image round fit">
+											<a href="generic.html" class="link"><img src="images/pic01.jpg" alt="" /></a>
+										</div>
+									</div>
+									<div class="col col2">
+										<h3>MusicRNN Model by Magenta.js</h3>
+										<p>A MusicRNN is an Long Short-Term Memory-based (LSTM) language model for musical notes.</p>
+										<a href="https://magenta.github.io/magenta-js/music/#getting-started" class="button">Learn More</a>
+									</div>
+								</div>
+						</div>
+					</section>
+
+				
+
+		<!-- Footer -->
+		<footer id="footer">
+			<div class="copyright">
+				
+				<p>&copy; Untitled. All rights reserved. Design: <a href="https://templated.co">TEMPLATED</a>.</p>
+			</div>
+		</footer>
+
+
+		<!-- The core Firebase JS SDK is always required and must be listed first -->
+		<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+		<!-- TODO: Add SDKs for Firebase products that you want to use
+			https://firebase.google.com/docs/web/setup#available-libraries -->
+		<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-storage.js"></script>
+
+
+		<script>
+			// Your web app's Firebase configuration
+			// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+			var firebaseConfig = {
+				apiKey: "AIzaSyDuIu6yGDQzGCklyE2sHf7nf17q6-QJ2uo",
+				authDomain: "magentamusic2020.firebaseapp.com",
+				databaseURL: "https://magentamusic2020.firebaseio.com",
+				projectId: "magentamusic2020",
+				storageBucket: "magentamusic2020.appspot.com",
+				messagingSenderId: "116104596768",
+				appId: "1:116104596768:web:6ba6a5bc704e9a02471b45",
+				measurementId: "G-1LLXLYNCNF"
+			};
+			// Initialize Firebase
+			firebase.initializeApp(firebaseConfig);
+			firebase.analytics();
+			
+			// 1
+			const storageService = firebase.storage();
+			const storageRef = storageService.ref();
+
+			// 2
+			//document.querySelector('.file-select').addEventListener('change', handleFileUploadChange);
+			//document.querySelector('.file-submit').addEventListener('click', handleFileUploadSubmit);
+
+			//3
+			let selectedFile;
+			function handleFileUploadChange(e) {
+				selectedFile = e.target.files[0];
+			}
+
+			function handleFileUploadSubmit(e) {
+			const uploadTask = storageRef.child(`images/${selectedFile.name}`).put(selectedFile); //create a child directory called images, and place the file inside this directory
+			uploadTask.on('state_changed', (snapshot) => {
+			// Observe state change events such as progress, pause, and resume
+			}, (error) => {
+				// Handle unsuccessful uploads
+				console.log(error);
+			}, () => {
+				// Do something once upload is complete
+				console.log('success');
+			});
+			}
+			
+		</script>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/fb.js"></script>
+			
+	</body>
+</html>

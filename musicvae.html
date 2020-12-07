@@ -1,0 +1,394 @@
+<!DOCTYPE HTML>
+<!--
+	Urban by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>Magenta Music: AI-Generated Music</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body>
+
+		<!-- <div>
+			<canvas id="canvas">
+		</div> -->
+
+
+		<!-- Load @magenta/music -->
+		<script src="https://cdn.jsdelivr.net/npm/@magenta/music@^1.0.0"></script>
+		<!-- Place your code in the script tag below. You can also use an external .js file -->
+		<script>
+		
+		window.onload=function(){
+			document.getElementById("myFile1").addEventListener("change",  update );
+			document.getElementById("myFile2").addEventListener("change",  update2 );
+		}
+
+		TWINKLE_TWINKLE = {
+			notes: [
+				{pitch: 60, startTime: 0.0, endTime: 0.5},
+				{pitch: 60, startTime: 0.5, endTime: 1.0},
+				{pitch: 67, startTime: 1.0, endTime: 1.5},
+				{pitch: 67, startTime: 1.5, endTime: 2.0},
+				{pitch: 69, startTime: 2.0, endTime: 2.5},
+				{pitch: 69, startTime: 2.5, endTime: 3.0},
+				{pitch: 67, startTime: 3.0, endTime: 4.0},
+				{pitch: 65, startTime: 4.0, endTime: 4.5},
+				{pitch: 65, startTime: 4.5, endTime: 5.0},
+				{pitch: 64, startTime: 5.0, endTime: 5.5},
+				{pitch: 64, startTime: 5.5, endTime: 6.0},
+				{pitch: 62, startTime: 6.0, endTime: 6.5},
+				{pitch: 62, startTime: 6.5, endTime: 7.0},
+				{pitch: 60, startTime: 7.0, endTime: 8.0},  
+			],
+			totalTime: 8
+		};
+
+		MARY_HAD = {
+			notes: [
+				{pitch: 60, startTime: 0.0, endTime: 0.5},
+				{pitch: 58, startTime: 0.5, endTime: 1.0},
+				{pitch: 56, startTime: 1.0, endTime: 1.5},
+				{pitch: 58, startTime: 1.5, endTime: 2.0},
+				{pitch: 60, startTime: 2.0, endTime: 2.5},
+				{pitch: 60, startTime: 2.5, endTime: 3.0},
+				{pitch: 60, startTime: 3.0, endTime: 4.0},
+				{pitch: 58, startTime: 4.0, endTime: 4.5},
+				{pitch: 58, startTime: 4.5, endTime: 5.0},
+				{pitch: 58, startTime: 5.0, endTime: 6.0},
+				{pitch: 60, startTime: 6.0, endTime: 6.5},
+				{pitch: 63, startTime: 6.5, endTime: 7.0},
+				{pitch: 63, startTime: 7.0, endTime: 8.0}, 
+			],
+			totalTime: 8
+		};
+		
+		var value1 = TWINKLE_TWINKLE;
+		var value2 = MARY_HAD;
+		var customNS = ["" , ""]
+
+		function update() {
+
+		var fr = new FileReader();
+		fr.onload = function () {
+			
+			customNS[0] = this.result;
+			document.getElementById('contents').textContent = customNS[0];
+			console.log(customNS[0]);
+			customNS[0] = JSON.parse(customNS[0]);
+		};
+		fr.readAsText(this.files[0]);
+		}
+
+		function update2() {
+
+		var fr = new FileReader();
+		fr.onload = function () {
+			
+			customNS[1] = this.result;
+			document.getElementById('contents2').textContent = customNS[1];
+			console.log(customNS[1]);
+			customNS[1] = JSON.parse(customNS[1]);
+		};
+		fr.readAsText(this.files[0]);
+		}
+
+		function enableFileUpload(){
+			var cust = document.getElementById("custom");
+			if(cust.checked)
+			{
+				document.getElementById("myFile1").disabled = false;
+				document.getElementById("contents").disabled = false;
+			}
+			else
+			{
+				document.getElementById("myFile1").disabled = true;
+				document.getElementById("contents").disabled = true; 
+			}   
+     	}  
+
+		 function enableFileUpload2(){
+			var cust2 = document.getElementById("custom2");
+			if(cust2.checked)
+			{
+				document.getElementById("myFile2").disabled = false;
+				document.getElementById("contents2").disabled = false;
+			}
+			else
+			{
+				document.getElementById("myFile2").disabled = true;
+				document.getElementById("contents2").disabled = true; 
+			}   
+     	}  
+		
+	
+		// Initialize the model.
+		music_vae = new mm.MusicVAE('https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/mel_4bar_small_q2');
+		music_vae.initialize();
+
+		// Create a player to play the sampled sequence.
+		vaePlayer = new mm.Player();
+
+		// Create a player to play the sampled sequence.
+		player = new mm.Player();
+
+		function playNew() {
+		if (vaePlayer.isPlaying()) {
+			vaePlayer.stop();
+			return;
+		}
+
+		//Radio button check #1
+		if (document.getElementById('twinkle').checked) {
+			value1 = TWINKLE_TWINKLE;
+		}
+		else if(document.getElementById('mary').checked) {
+			value1 = MARY_HAD;
+		}
+		else if(document.getElementById('custom').checked && customNS[0] != null && customNS[0] != "") {
+			value1 = customNS[0];
+		}
+		else{
+			alert("Please select a base song to generate new melodies"); 
+			return;
+		}
+		//Radio button check #2
+		if (document.getElementById('twinkle2').checked) {
+			value2 = TWINKLE_TWINKLE;
+		}
+		else if(document.getElementById('mary2').checked) {
+			value2 = MARY_HAD;
+		}
+		else if(document.getElementById('custom2').checked && customNS[1] != null && customNS[1] != "") {
+			value2 = customNS[1];
+		}
+		else{
+			alert("Please select a base song to generate new melodies"); 
+			return;
+		}
+
+		// Music VAE requires quantized melodies, so quantize them first.
+		const qns1 = mm.sequences.quantizeNoteSequence(value1, 4);
+		const qns2 = mm.sequences.quantizeNoteSequence(value2, 4);
+		music_vae
+		.interpolate([qns1, qns2], 4)
+		.then((sample) => {
+			const concatenated = mm.sequences.concatenate(sample);
+			vaePlayer.start(concatenated);
+		});
+		}
+
+		//*** playSample******
+		const playSample = () => {
+			
+			if (player.isPlaying()) {
+				player.stop();
+				return;
+			}
+			
+			// The model expects a quantized sequence, and ours was unquantized:
+			const qns = mm.sequences.quantizeNoteSequence(TWINKLE_TWINKLE, 4);
+			// music_rnn
+			// .continueSequence(qns, rnn_steps, rnn_temperature)
+			// .then((sample) => player.start(sample));
+				
+			player.start(value);
+				
+			};
+
+
+			// viz = new mm.PianoRollCanvasVisualizer(TWINKLE_TWINKLE, document.getElementById('canvas'));
+
+			// vizPlayer = new mm.Player(false, {
+			//   run: (note) => viz.redraw(note),
+			//   stop: () => {console.log('done');}
+			// });
+			//vizPlayer.start();
+			//player.stop();
+		</script>
+
+
+
+		<!-- Header -->
+			<header id="header" class="alt">
+				<div class="logo"><a href="index.html"> Magenta Music<span></span></a></div>
+				<a href="#menu">Menu</a>
+			</header>
+
+		<!-- Nav -->
+			<nav id="menu">
+				<ul class="links">
+					<li><a href="index.html">MusicRNN</a></li>
+					<li><a href="musicvae.html">MusicVAE Interpolater</a></li>
+					<li><a href="about.html">About</a></li>
+				</ul>
+			</nav>
+
+		<!-- Banner -->
+		<section id="banner">
+			<div class="inner">
+				<header>
+					<h1>MusicVAE Interpolater</h1>
+					<p>Hear a new melody that draws from 2 songs!</p>
+				</header>
+<!-- 
+				<button id="1" onclick="changeVal('val1')">Twinkle, Twinkle, Little Star</button>
+				<button id="2" onclick="changeVal('val2')">Mary Had a Little Lamb</button> -->
+				<div style="float:left;">
+					<div class="radioLeft">
+						<input type="radio" id="twinkle" name="samples" value="0" onchange="enableFileUpload();">
+						<label for="twinkle">Twinkle</label>
+						<br>
+						<input type="radio" id="mary" name="samples" value="1" onchange="enableFileUpload();">
+						<label for="mary">Mary Had a Little Lamb</label>
+						<br>
+						<input type="radio" id="custom" name="samples" value="2" onchange="enableFileUpload();">
+						<label for="custom">Custom NoteSequence Upload</label>
+						<br>
+					</div>
+					<!-- file input -->
+					<input type="file" id="myFile1" disabled="disabled">
+					<textarea id="contents"style="width: 500px; 
+													height: 200px;
+													text-align:center;
+													margin: 0 auto;
+													margin-left: auto;
+													margin-right: auto"
+													disabled="disabled">
+													</textarea>
+				</div>
+
+				<div style="float:right;">
+					<div class="radioLeft" style="width: 55%;">
+						<input type="radio" id="twinkle2" name="samples2" value="0" onchange="enableFileUpload2();">
+						<label for="twinkle2">Twinkle</label>
+						<br>
+						<input type="radio" id="mary2" name="samples2" value="1" onchange="enableFileUpload2();">
+						<label for="mary2">Mary Had a Little Lamb</label>
+						<br>
+						<input type="radio" id="custom2" name="samples2" value="2" onchange="enableFileUpload2();">
+						<label for="custom2">Custom NoteSequence Upload</label>
+						<br>
+					</div>
+					<!-- file input -->
+					<input type="file" id="myFile2" disabled="disabled">
+					<textarea id="contents2"style="width: 500px; 
+													height: 200px;
+													text-align:center;
+													margin: 0 auto;
+													margin-left: auto;
+													margin-right: auto"
+													disabled="disabled">
+													</textarea>
+				</div>
+				
+				<br><br><br><br><br>
+				
+				<button id="start" onclick="playNew()">Play New AI-Generated Melody</button>
+
+			</div>
+		</section>
+
+		<!-- Main -->
+			<div id="main">
+
+				<!-- Section -->
+					<section class="wrapper style1">
+						<div class="inner">
+							<!-- 2 Columns -->
+								<div class="flex flex-2">
+									<div class="col col1">
+										<div class="image round fit">
+											<a href="generic.html" class="link"><img src="images/pic01.jpg" alt="" /></a>
+										</div>
+									</div>
+									<div class="col col2">
+										<h3>MusicVAE Model by Magenta.js</h3>
+										<p>A MusicVAE is a variational autoencoder made up of an Encoder and Decoder, along with a DataConverter for converting between Tensor and NoteSequence objects for input and output.
+											Exposes methods for interpolation and sampling of musical sequences.</p>
+										<a href="https://magenta.github.io/magenta-js/music/#getting-started" class="button">Learn More</a>
+									</div>
+								</div>
+						</div>
+					</section>
+
+				
+
+		<!-- Footer -->
+		<footer id="footer">
+			<div class="copyright">
+				
+				<p>&copy; Untitled. All rights reserved. Design: <a href="https://templated.co">TEMPLATED</a>.</p>
+			</div>
+		</footer>
+
+
+		<!-- The core Firebase JS SDK is always required and must be listed first -->
+		<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+		<!-- TODO: Add SDKs for Firebase products that you want to use
+			https://firebase.google.com/docs/web/setup#available-libraries -->
+		<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-storage.js"></script>
+
+
+		<script>
+			// Your web app's Firebase configuration
+			// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+			var firebaseConfig = {
+				apiKey: "AIzaSyDuIu6yGDQzGCklyE2sHf7nf17q6-QJ2uo",
+				authDomain: "magentamusic2020.firebaseapp.com",
+				databaseURL: "https://magentamusic2020.firebaseio.com",
+				projectId: "magentamusic2020",
+				storageBucket: "magentamusic2020.appspot.com",
+				messagingSenderId: "116104596768",
+				appId: "1:116104596768:web:6ba6a5bc704e9a02471b45",
+				measurementId: "G-1LLXLYNCNF"
+			};
+			// Initialize Firebase
+			firebase.initializeApp(firebaseConfig);
+			firebase.analytics();
+			
+			// 1
+			const storageService = firebase.storage();
+			const storageRef = storageService.ref();
+
+			// 2
+			document.querySelector('.file-select').addEventListener('change', handleFileUploadChange);
+			document.querySelector('.file-submit').addEventListener('click', handleFileUploadSubmit);
+
+			//3
+			let selectedFile;
+			function handleFileUploadChange(e) {
+				selectedFile = e.target.files[0];
+			}
+
+			function handleFileUploadSubmit(e) {
+			const uploadTask = storageRef.child(`images/${selectedFile.name}`).put(selectedFile); //create a child directory called images, and place the file inside this directory
+			uploadTask.on('state_changed', (snapshot) => {
+			// Observe state change events such as progress, pause, and resume
+			}, (error) => {
+				// Handle unsuccessful uploads
+				console.log(error);
+			}, () => {
+				// Do something once upload is complete
+				console.log('success');
+			});
+			}
+			
+		</script>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/fb.js"></script>
+			
+	</body>
+</html>
